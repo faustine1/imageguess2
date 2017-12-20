@@ -63,18 +63,4 @@
         android:layout_marginTop="10dp">
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/width_info"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="20dip"
-        android:text=""
-        android:textSize="16sp"
-        android:textStyle="bold" />
-
-    <SeekBar
-        android:id="@+id/width_seek"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content" />
-
 </LinearLayout>

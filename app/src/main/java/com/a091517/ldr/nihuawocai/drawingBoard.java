@@ -63,27 +63,27 @@ public class drawingBoard extends Activity {
 
         SubActionButton.Builder itemBuilder = new SubActionButton.Builder(this);
         ImageView red_Icon = new ImageView(this);
-        Drawable red_img = ContextCompat.getDrawable(this, R.drawable.icon_erase);
+        Drawable red_img = ContextCompat.getDrawable(this, R.drawable.icon_red);
         red_Icon.setImageDrawable(red_img);
         SubActionButton red_button = itemBuilder.setContentView(red_Icon).build();
 
         ImageView yellow_Icon = new ImageView(this);
-        Drawable yellow_img = ContextCompat.getDrawable(this, R.drawable.icon_erase);
+        Drawable yellow_img = ContextCompat.getDrawable(this, R.drawable.icon_yellow);
         yellow_Icon.setImageDrawable(yellow_img);
         SubActionButton yellow_button = itemBuilder.setContentView(yellow_Icon).build();
 
         ImageView blue_Icon = new ImageView(this);
-        Drawable blue_img = ContextCompat.getDrawable(this, R.drawable.icon_erase);
+        Drawable blue_img = ContextCompat.getDrawable(this, R.drawable.icon_blue);
         blue_Icon.setImageDrawable(blue_img);
         SubActionButton blue_button = itemBuilder.setContentView(blue_Icon).build();
 
         ImageView green_Icon = new ImageView(this);
-        Drawable green_img = ContextCompat.getDrawable(this, R.drawable.icon_erase);
+        Drawable green_img = ContextCompat.getDrawable(this, R.drawable.icon_green);
         green_Icon.setImageDrawable(green_img);
         SubActionButton green_button = itemBuilder.setContentView(green_Icon).build();
 
         ImageView black_Icon = new ImageView(this);
-        Drawable black_img = ContextCompat.getDrawable(this, R.drawable.icon_erase);
+        Drawable black_img = ContextCompat.getDrawable(this, R.drawable.icon_black);
         black_Icon.setImageDrawable(black_img);
         SubActionButton black_button = itemBuilder.setContentView(black_Icon).build();
 
@@ -93,7 +93,7 @@ public class drawingBoard extends Activity {
         SubActionButton erase_button = itemBuilder.setContentView(erase_Icon).build();
 
         ImageView width_Icon = new ImageView(this);
-        Drawable width_img = ContextCompat.getDrawable(this, R.drawable.icon_erase);
+        Drawable width_img = ContextCompat.getDrawable(this, R.drawable.icon_width);
         width_Icon.setImageDrawable(width_img);
         SubActionButton width_button = itemBuilder.setContentView(width_Icon).build();
 
@@ -170,7 +170,8 @@ public class drawingBoard extends Activity {
             public void onClick(View v) {
                 Log.i(TAG, "onClick: erase_button");
                 drawPaint.setStrokeWidth(ERASE_WIDTH);
-                drawPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+                drawPaint.setColor(Color.WHITE);
+                //drawPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
                 actionMenu.close(true);
             }
         });
@@ -179,9 +180,15 @@ public class drawingBoard extends Activity {
             @Override
             public void onClick(View v) {
                 Log.i(TAG, "onClick: width_button");
-                drawPaint.setColor(Color.BLACK);
-                paintWidth = 30;
-                drawPaint.setStrokeWidth(paintWidth);
+                final WidthSeekBar widthSeekBar = new WidthSeekBar(drawingBoard.this, (int) paintWidth);
+                widthSeekBar.widthSeekBar(new WidthSeekBar.WidthListener() {
+                    @Override
+                    public void transWidth(){
+                        paintWidth = widthSeekBar.getWidth();
+                        drawPaint.setStrokeWidth(paintWidth);
+                    }
+                });
+                widthSeekBar.show();
                 drawPaint.setXfermode(null);
                 actionMenu.close(true);
             }

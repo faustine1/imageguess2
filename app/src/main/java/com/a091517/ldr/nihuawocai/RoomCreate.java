@@ -63,7 +63,7 @@ public class RoomCreate extends Activity {
 
                 }
 
-                Intent intent = new Intent(RoomCreate.this, gameRoom.class);
+                Intent intent = new Intent(RoomCreate.this, RoomWait.class);
                 try {
                     intent.putExtra(CREATE_ROOM, jsonObject.get("roomNumber").toString());
                 } catch (JSONException e) {

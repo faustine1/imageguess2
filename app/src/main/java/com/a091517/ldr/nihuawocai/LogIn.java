@@ -22,7 +22,7 @@ public class LogIn extends Activity {
     EditText userName;
     EditText password;
     JSONObject jsonObject=new JSONObject();
-    private static ClientSocket clientSocket = new ClientSocket();
+    private ClientSocket clientSocket = new ClientSocket(this);
 
 
     @Override

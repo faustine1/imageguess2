@@ -22,11 +22,11 @@ public class LogIn extends Activity {
     EditText userName;
     EditText password;
     JSONObject jsonObject=new JSONObject();
-    private ClientSocket clientSocket = new ClientSocket(this);
-
+    private ClientSocket clientSocket;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        clientSocket = new ClientSocket(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.log_in);
         confirmButton=(Button)findViewById(R.id.confirmLogIn);

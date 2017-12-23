@@ -2,9 +2,11 @@ package com.a091517.ldr.nihuawocai;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -12,6 +14,7 @@ import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import static android.content.ContentValues.TAG;
 
 /**
  * Created by ldr on 2017/12/17.
@@ -21,7 +24,7 @@ public class RoomCreate extends Activity {
     Button confirmButton;
     EditText roomNumber;
     JSONObject jsonObject=new JSONObject();
-    private static final String CREATE_ROOM="com.a091517.ldr.nihuawocai.create_room";
+    private static final String CREATE_ROOM="create_room";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +32,7 @@ public class RoomCreate extends Activity {
         setContentView(R.layout.room_create);
         confirmButton = (Button) findViewById(R.id.confirmCreateRoom);
         roomNumber = (EditText) findViewById(R.id.roomNumber);
+        Log.i(TAG,"1");
 
         roomNumber.addTextChangedListener(new TextWatcher() {
             @Override

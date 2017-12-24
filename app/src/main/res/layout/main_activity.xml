@@ -9,5 +9,4 @@
         android:src="@drawable/first"
         android:backgroundTint="@color/white"/>
 
-
 </LinearLayout>

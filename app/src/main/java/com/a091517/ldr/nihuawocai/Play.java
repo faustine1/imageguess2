@@ -43,8 +43,8 @@ public class Play extends Activity {
     private int paintColor = Color.BLACK;
     private String localIP;
     private String remoteIP;
-    private int localPort = 8002;
-    private int remotePort = 8001;
+    private int localPort ;
+    private int remotePort;
     private int actionState;
     private static ClientSocket clientSocket;
     private static final float TOUCH_TOLERANCE = 4; // 在屏幕上移动4个像素后响应
@@ -59,6 +59,7 @@ public class Play extends Activity {
     private EditText answer;
     private Button sendAnswerButton;
     private JSONObject jsonObject;
+    private MyApp myApp;
     private static final String CREATE_ROOM = "com.a091517.ldr.nihuawocai.create_room";
 
 
@@ -77,6 +78,7 @@ public class Play extends Activity {
         currentWord.setText("苹果");
         answer = (EditText) findViewById(R.id.answer);
         sendAnswerButton = (Button) findViewById(R.id.sendAnswerButton);
+        myApp=(MyApp)getApplication();
         init();
 
         clientSocket = new ClientSocket(this);
@@ -138,7 +140,15 @@ public class Play extends Activity {
         init();
 
         localIP = clientSocket.getIp(this);
-        remoteIP = "192.168.43.239";
+        remoteIP = myApp.getRemoteIp();
+        localPort=Integer.parseInt(myApp.getPortNumber());
+        remotePort=Integer.parseInt(myApp.getRemotePort());
+        clientSocket.InfoReceiver(localPort, new ClientSocket.DataListener() {
+            @Override
+            public void transData() {
+
+            }
+        });
         new Thread(new GameDataThread()).start();
 
         red_button.setOnClickListener(new View.OnClickListener() {

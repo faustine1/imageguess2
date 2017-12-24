@@ -32,14 +32,15 @@ public class ClientSocket {
     private static String serverIP ;
     private static final int serverPort = 8000;
     private String gameData;
+    private String fromServer;
 
     ClientSocket(Context context){
-        serverIP = getIp(context);
+        serverIP = "172.20.10.10";
         Log.i(TAG, "IP address is: " + serverIP);
     }
 
-    public void InfoToServer(String sendMessage){
-        TCPSocket tcpSocket = new TCPSocket(serverIP, serverPort, sendMessage);
+    public void InfoToServer(String sendMessage,DataListener dataListener){
+        TCPSocket tcpSocket = new TCPSocket(serverIP, serverPort, sendMessage,dataListener);
         new Thread(tcpSocket).start();
     }
 
@@ -54,9 +55,14 @@ public class ClientSocket {
     }
 
     public interface DataListener{
-        void transData();
+        void transData() throws IOException;
     }
 
+    public  String getServermessage(){
+        synchronized (this){
+            return  this.fromServer;
+        }
+    }
     public  String getGameData(){
         synchronized(this){
             return this.gameData;
@@ -123,11 +129,13 @@ public class ClientSocket {
         private int serverPort;
         private String serverIP;
         private String sendMessage;
+        private DataListener dataListener;
 
-        public TCPSocket(String serverIP, int serverPort, String message){
+        public TCPSocket(String serverIP, int serverPort, String message,DataListener dataListener){
             this.serverIP = serverIP;
             this.serverPort = serverPort;
             this.sendMessage = message;
+            this.dataListener =dataListener;
         }
 
         @Override
@@ -136,8 +144,11 @@ public class ClientSocket {
                 Socket socket = new Socket(serverIP, serverPort);
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                 out.println(sendMessage);
-                out.close();
+                socket.shutdownOutput();
+                //out.close();
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                fromServer =in.readLine();
+                dataListener.transData();
                 socket.close();
             } catch(IOException e){
                 e.printStackTrace();

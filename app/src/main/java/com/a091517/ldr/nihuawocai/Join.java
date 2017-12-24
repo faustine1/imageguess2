@@ -29,8 +29,8 @@ public class Join extends Activity {
     private String gameData;
     private String localIP;
     private String remoteIP;
-    private int localPort = 8001;
-    private int remotePort = 8002;
+    private int localPort ;
+    //private int remotePort = 8002;
     private int actionState = 10000;
     private static ClientSocket clientSocket;
     private static JSONObject gameDataJSON;
@@ -38,16 +38,18 @@ public class Join extends Activity {
     private static final int ACTION_DOWN = 10000;
     private static final int ACTION_MOVE = 10001;
     private static final int ACTION_UP = 10002;
-
+    private MyApp myApp;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final JoinView joinView = new JoinView(this);
         setContentView(joinView);
+        myApp=(MyApp)getApplication();
         clientSocket = new ClientSocket(this);
         init();
         localIP = clientSocket.getIp(this);
-        remoteIP = "192.168.43.137";
+        localPort=Integer.parseInt(myApp.getPortNumber());
+        remoteIP = myApp.getRemoteIp();
         clientSocket.InfoReceiver(localPort, new ClientSocket.DataListener() {
             @Override
             public void transData() {

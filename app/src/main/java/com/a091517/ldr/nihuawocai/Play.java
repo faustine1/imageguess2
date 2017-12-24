@@ -28,6 +28,10 @@ import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
+import static android.content.ContentValues.TAG;
+
+import java.util.ArrayList;
 
 import static android.content.ContentValues.TAG;
 
@@ -36,15 +40,15 @@ import static android.content.ContentValues.TAG;
  */
 
 public class Play extends Activity {
-    private TextView currentPlayer;
+    private TextView currentDrawer;
     private Paint drawPaint;
     private float posX, posY;
     private float paintWidth = 12;
     private int paintColor = Color.BLACK;
     private String localIP;
     private String remoteIP;
-    private int localPort ;
-    private int remotePort;
+    private int localPort = 8002;
+    private int remotePort = 8001;
     private int actionState;
     private static ClientSocket clientSocket;
     private static final float TOUCH_TOLERANCE = 4; // 在屏幕上移动4个像素后响应
@@ -59,27 +63,37 @@ public class Play extends Activity {
     private EditText answer;
     private Button sendAnswerButton;
     private JSONObject jsonObject;
-    private MyApp myApp;
-    private static final String CREATE_ROOM = "com.a091517.ldr.nihuawocai.create_room";
+    private static final String CREATE_ROOM="create_room";
+    private static final String CURRENT_DRAWER="current_drawer";
+    private static final String SCORE_LIST="score_list";
+    private static final String WORDS_USED="used_words";
+    private ArrayList<TextView> guesserList;
+    private ArrayList<TextView> scoreGuesserList;
+    private ArrayList<Integer> scoreNumList; //各玩家分数
+    private ArrayList<String> wordsUsed;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.play);
+        Log.i(TAG,"onCreate");
         currentWord = (TextView) findViewById(R.id.currentWord);
         currentRoomNumber = (TextView) findViewById(R.id.currentRoomNumber);
         currentRoomNumber.setText(this.getIntent().getStringExtra(CREATE_ROOM));
-        currentPlayer = (TextView) findViewById(R.id.playerNumber);
         timeShow = (TextView) findViewById(R.id.timer);
         paletteView = (LinearLayout) findViewById(R.id.paletteView);
         paletteView.addView(new GameView(this));
-        currentPlayer.setText("1");
-        currentWord.setText("苹果");
+        currentDrawer = (TextView) findViewById(R.id.playerNumber);
+
+
+        updateGameStatus(); //10个textView传进入更新值，重新setText，
+        //还有更新用过的词
+        currentWord.setText("apple");
         answer = (EditText) findViewById(R.id.answer);
         sendAnswerButton = (Button) findViewById(R.id.sendAnswerButton);
-        myApp=(MyApp)getApplication();
         init();
+        timer.start();
 
         clientSocket = new ClientSocket(this);
         ImageView menu_icon = new ImageView(this);
@@ -140,15 +154,7 @@ public class Play extends Activity {
         init();
 
         localIP = clientSocket.getIp(this);
-        remoteIP = myApp.getRemoteIp();
-        localPort=Integer.parseInt(myApp.getPortNumber());
-        remotePort=Integer.parseInt(myApp.getRemotePort());
-        clientSocket.InfoReceiver(localPort, new ClientSocket.DataListener() {
-            @Override
-            public void transData() {
-
-            }
-        });
+        remoteIP = "192.168.43.239";
         new Thread(new GameDataThread()).start();
 
         red_button.setOnClickListener(new View.OnClickListener() {
@@ -240,7 +246,101 @@ public class Play extends Activity {
                 actionMenu.close(true);
             }
         });
+
+        //如果结果正确，手动修改当前activity中的变量，出现新词/新提示语
+        //如果错误，消息提醒
+        sendAnswerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i(TAG, "sendAnswerButtonClick");
+                String correctAnswer = currentWord.getText().toString();
+                String guessAnswer = answer.getText().toString();
+                int winnerId = 2; //假设一直是玩家2猜对
+                int winnerTextViewId = -1;  //玩家2对应的Textview显示栏
+                //如果玩家2本轮不是画画者，分数显示就要改
+                for (int i = 0; i < 5; ++i) {
+                    int tmp = Integer.parseInt(guesserList.get(i).getText().toString());
+                    if (tmp == winnerId) {
+                        winnerTextViewId = i;
+                        break;
+                    }
+                }
+                Log.i(TAG,"winnerTextViewId"+String.valueOf(winnerTextViewId));
+                if (winnerTextViewId != -1) {
+                    int winnerScoreUpdate = Integer.parseInt(scoreGuesserList.get(winnerTextViewId).getText().toString());
+                    Log.i(TAG, String.valueOf(winnerScoreUpdate));
+                    if (guessAnswer.equals(correctAnswer) == true) {
+                        winnerScoreUpdate += 5;
+                        scoreNumList.set(winnerId - 1, winnerScoreUpdate); // 更新胜者分数
+                        Log.i(TAG, scoreNumList.get(0).toString());
+                        Log.i(TAG, scoreNumList.get(1).toString());
+                        Log.i(TAG, scoreNumList.get(2).toString());
+                        Log.i(TAG, scoreNumList.get(3).toString());
+                        Log.i(TAG, scoreNumList.get(4).toString());
+                        Log.i(TAG, scoreNumList.get(5).toString());
+                        scoreGuesserList.get(winnerTextViewId).setText(String.valueOf(winnerScoreUpdate));
+                        wordsUsed.add(currentWord.getText().toString());
+                    } else
+                        Toast.makeText(Play.this, "wrong answer", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
+
+    private void updateGameStatus(){
+        int currentDrawerId=this.getIntent().getIntExtra(CURRENT_DRAWER,1); //默认当前画画的是玩家1
+        currentDrawer.setText(String.valueOf(currentDrawerId));
+        guesserList=new ArrayList<TextView>();
+        Log.i(TAG,"updateGameStatus");
+        /*
+        guesserList.add((TextView)findViewById(R.id.guesser_1));
+        guesserList.add((TextView)findViewById(R.id.guesser_2));
+        guesserList.add((TextView)findViewById(R.id.guesser_3));
+        guesserList.add((TextView)findViewById(R.id.guesser_4));
+        guesserList.add((TextView)findViewById(R.id.guesser_5));
+        scoreGuesserList=new ArrayList<TextView>();
+        scoreGuesserList.add((TextView)findViewById(R.id.score_guesser_1));
+        scoreGuesserList.add((TextView)findViewById(R.id.score_guesser_2));
+        scoreGuesserList.add((TextView)findViewById(R.id.score_guesser_3));
+        scoreGuesserList.add((TextView)findViewById(R.id.score_guesser_4));
+        scoreGuesserList.add((TextView)findViewById(R.id.score_guesser_5));
+        */
+
+        scoreNumList=this.getIntent().getIntegerArrayListExtra(SCORE_LIST);  //6位玩家的分数，下标对应
+        int j=0;
+        for(int i=0;i<5;++i){
+            if((j+1)==currentDrawerId)  //当前轮画画的玩家信息不在下方显示
+                ++j;
+            guesserList.get(i).setText(String.valueOf(j+1));
+            scoreGuesserList.get(i).setText(String.valueOf(scoreNumList.get(j)));
+            ++j;
+        }
+        wordsUsed=this.getIntent().getStringArrayListExtra(WORDS_USED);
+    }
+
+    private CountDownTimer timer=new CountDownTimer(30000,1000) {
+        @Override
+        public void onTick(long millisUntilFinished) {
+            timeShow.setText(millisUntilFinished/1000+"秒");
+        }
+
+        @Override
+        public void onFinish() { //时间到，换下一个玩家画画,销毁当前activity，新开activity
+            timeShow.setText("时间到！");
+            timeShow.setTextColor(Color.RED);
+            int nextDrawer;
+            nextDrawer=Integer.parseInt(currentDrawer.getText().toString())+1;
+            if(nextDrawer==7)
+                nextDrawer-=6;
+            Intent intent=new Intent(Play.this,Play.class);
+            intent.putExtra(CURRENT_DRAWER,nextDrawer);
+            intent.putExtra(SCORE_LIST,scoreNumList);
+            intent.putExtra(WORDS_USED,wordsUsed);
+            intent.putExtra(CREATE_ROOM,currentRoomNumber.getText());
+            startActivity(intent);
+            finish();
+        }
+    };
 
     private void init() {
         drawPaint = new Paint();

@@ -1,8 +1,7 @@
-package com.a091517.ldr.nihuawocai;
+package com.ImageGuess;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -21,56 +20,55 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import org.json.JSONException;
+import org.json.JSONObject;
+import java.util.ArrayList;
 import com.oguzdev.circularfloatingactionmenu.library.FloatingActionButton;
 import com.oguzdev.circularfloatingactionmenu.library.FloatingActionMenu;
 import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.w3c.dom.Text;
-import static android.content.ContentValues.TAG;
-
-import java.util.ArrayList;
-
 import static android.content.ContentValues.TAG;
 
 /**
- * Created by ldr on 2017/12/21.
+ * ImageGuess Game
+ * Play board interface
+ * Created by Stanislas, Lisette, Faustine on 2017/12 in SJTU.
  */
 
 public class Play extends Activity {
     private TextView currentDrawer;
     private Paint drawPaint;
-    private float posX, posY;
-    private float paintWidth = 12;
-    private int paintColor = Color.BLACK;
-    private String localIP;
-    private String remoteIP;
-    private int localPort = 8002;
-    private int remotePort = 8001;
-    private int actionState;
-    private static ClientSocket clientSocket;
-    private static final float TOUCH_TOLERANCE = 4; // 在屏幕上移动4个像素后响应
-    private static final float ERASE_WIDTH = 150;
-    private static final int ACTION_DOWN = 10000;
-    private static final int ACTION_MOVE = 10001;
-    private static final int ACTION_UP = 10002;
-    private static LinearLayout paletteView;
     private TextView currentWord;
     private TextView timeShow;
     private TextView currentRoomNumber;
     private EditText answer;
     private Button sendAnswerButton;
-    private JSONObject jsonObject;
-    private static final String CREATE_ROOM="create_room";
-    private static final String CURRENT_DRAWER="current_drawer";
-    private static final String SCORE_LIST="score_list";
-    private static final String WORDS_USED="used_words";
+    private LinearLayout paletteView;
     private ArrayList<TextView> guesserList;
     private ArrayList<TextView> scoreGuesserList;
     private ArrayList<Integer> scoreNumList; //各玩家分数
     private ArrayList<String> wordsUsed;
+
+    private float posX, posY;
+    private float paintWidth = 12;
+    private int paintColor = Color.BLACK;
+    private String localIP;
+    private String remoteIP;
+    private int localPort;
+    private int remotePort;
+    private int actionState;
+    private ClientSocket clientSocket;
+    private MyApp myApp;
+
+    private static final float TOUCH_TOLERANCE = 4; // 在屏幕上移动4个像素后响应
+    private static final float ERASE_WIDTH = 150;
+    private static final int ACTION_DOWN = 10000;
+    private static final int ACTION_MOVE = 10001;
+    private static final int ACTION_UP = 10002;
+    private static final String CREATE_ROOM="create_room";
+    private static final String CURRENT_DRAWER="current_drawer";
+    private static final String SCORE_LIST="score_list";
+    private static final String WORDS_USED="used_words";
 
 
     @Override
@@ -78,6 +76,7 @@ public class Play extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.play);
         Log.i(TAG,"onCreate");
+        myApp=(MyApp)getApplication();
         currentWord = (TextView) findViewById(R.id.currentWord);
         currentRoomNumber = (TextView) findViewById(R.id.currentRoomNumber);
         currentRoomNumber.setText(this.getIntent().getStringExtra(CREATE_ROOM));
@@ -87,7 +86,7 @@ public class Play extends Activity {
         currentDrawer = (TextView) findViewById(R.id.playerNumber);
 
 
-        updateGameStatus(); //10个textView传进入更新值，重新setText，
+        //updateGameStatus(); //10个textView传进入更新值，重新setText，
         //还有更新用过的词
         currentWord.setText("apple");
         answer = (EditText) findViewById(R.id.answer);
@@ -95,7 +94,7 @@ public class Play extends Activity {
         init();
         timer.start();
 
-        clientSocket = new ClientSocket(this);
+        clientSocket = new ClientSocket(this, myApp.getServerIP(), myApp.getServerPort());
         ImageView menu_icon = new ImageView(this);
         Drawable menu_img = ContextCompat.getDrawable(this, R.drawable.icon_menu);
         menu_icon.setImageDrawable(menu_img);
@@ -154,7 +153,8 @@ public class Play extends Activity {
         init();
 
         localIP = clientSocket.getIp(this);
-        remoteIP = "192.168.43.239";
+        remoteIP = myApp.getRemoteIP();
+        remotePort = myApp.getRemotePort();
         new Thread(new GameDataThread()).start();
 
         red_button.setOnClickListener(new View.OnClickListener() {
@@ -292,7 +292,6 @@ public class Play extends Activity {
         currentDrawer.setText(String.valueOf(currentDrawerId));
         guesserList=new ArrayList<TextView>();
         Log.i(TAG,"updateGameStatus");
-        /*
         guesserList.add((TextView)findViewById(R.id.guesser_1));
         guesserList.add((TextView)findViewById(R.id.guesser_2));
         guesserList.add((TextView)findViewById(R.id.guesser_3));
@@ -304,7 +303,6 @@ public class Play extends Activity {
         scoreGuesserList.add((TextView)findViewById(R.id.score_guesser_3));
         scoreGuesserList.add((TextView)findViewById(R.id.score_guesser_4));
         scoreGuesserList.add((TextView)findViewById(R.id.score_guesser_5));
-        */
 
         scoreNumList=this.getIntent().getIntegerArrayListExtra(SCORE_LIST);  //6位玩家的分数，下标对应
         int j=0;
@@ -332,12 +330,12 @@ public class Play extends Activity {
             nextDrawer=Integer.parseInt(currentDrawer.getText().toString())+1;
             if(nextDrawer==7)
                 nextDrawer-=6;
-            Intent intent=new Intent(Play.this,Play.class);
-            intent.putExtra(CURRENT_DRAWER,nextDrawer);
-            intent.putExtra(SCORE_LIST,scoreNumList);
-            intent.putExtra(WORDS_USED,wordsUsed);
-            intent.putExtra(CREATE_ROOM,currentRoomNumber.getText());
-            startActivity(intent);
+            //Intent intent=new Intent(Play.this,Play.class);
+            //intent.putExtra(CURRENT_DRAWER,nextDrawer);
+            //intent.putExtra(SCORE_LIST,scoreNumList);
+            //intent.putExtra(WORDS_USED,wordsUsed);
+            //intent.putExtra(CREATE_ROOM,currentRoomNumber.getText());
+            //startActivity(intent);
             finish();
         }
     };
@@ -443,14 +441,8 @@ public class Play extends Activity {
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
+                    Log.i(TAG, gameData.toString());
                     clientSocket.InfoSender(remotePort, remoteIP, gameData.toString());
-                    /*
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    */
                 }
             }
         }

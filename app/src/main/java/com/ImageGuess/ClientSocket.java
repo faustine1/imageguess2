@@ -1,4 +1,4 @@
-package com.a091517.ldr.nihuawocai;
+package com.ImageGuess;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -23,19 +23,22 @@ import java.util.Enumeration;
 import static android.content.ContentValues.TAG;
 
 /**
- * Created by Administrator on 2017/12/20.
+ * ImageGuess Game
+ * Client socket package
+ * Created by Stanislas, Lisette, Faustine on 2017/12 in SJTU.
  */
 
 public class ClientSocket {
-    //private static Socket TCPSocket;
-    //private static DatagramSocket UDPSocket;
-    private static String serverIP ;
-    private static final int serverPort = 8000;
     private String gameData;
     private String fromServer;
+    private UDPReceiver udpReceiver;
+    private String serverIP ;
+    private int serverPort;
 
-    ClientSocket(Context context){
-        serverIP = "172.20.10.10";
+
+    ClientSocket(Context context, String serverIP, int serverPort){
+        this.serverIP = serverIP;
+        this.serverPort = serverPort;
         Log.i(TAG, "IP address is: " + serverIP);
     }
 
@@ -45,7 +48,7 @@ public class ClientSocket {
     }
 
     public void InfoReceiver(int portNumber, DataListener dataListener){
-        UDPReceiver udpReceiver = new UDPReceiver(portNumber, dataListener);
+        udpReceiver = new UDPReceiver(portNumber, dataListener);
         new Thread(udpReceiver).start();
     }
 
@@ -58,14 +61,22 @@ public class ClientSocket {
         void transData() throws IOException;
     }
 
-    public  String getServermessage(){
+    public  String getServerMessage(){
         synchronized (this){
             return  this.fromServer;
         }
     }
+
     public  String getGameData(){
         synchronized(this){
             return this.gameData;
+        }
+    }
+
+    public void shutDown(){
+        synchronized (this){
+            udpReceiver.exit = true;
+            Log.i(TAG, "shutDown: ");
         }
     }
 
@@ -102,18 +113,16 @@ public class ClientSocket {
                     ( ipAddress >> 24 & 0xFF) ;
         }
         return ip;
-
     }
 
     private static String getLocalIpAddress()
     {
         try {
-            //Enumeration<NetworkInterface> en=NetworkInterface.getNetworkInterfaces();
             for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
                 NetworkInterface intf = en.nextElement();
                 for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
                     InetAddress inetAddress = enumIpAddr.nextElement();
-                    if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address) {//获取IPv4的IP地址
+                    if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address) { //获取IPv4的IP地址
                         return inetAddress.getHostAddress();
                     }
                 }
@@ -131,7 +140,7 @@ public class ClientSocket {
         private String sendMessage;
         private DataListener dataListener;
 
-        public TCPSocket(String serverIP, int serverPort, String message,DataListener dataListener){
+        TCPSocket(String serverIP, int serverPort, String message,DataListener dataListener){
             this.serverIP = serverIP;
             this.serverPort = serverPort;
             this.sendMessage = message;
@@ -176,7 +185,6 @@ public class ClientSocket {
                 DatagramSocket clientSocket = new DatagramSocket();
                 InetAddress IP = InetAddress.getByName(ipAddress);
                 try{
-                    //System.out.println(gameData);
                     rawData = gameData.getBytes("ASCII");
                     DatagramPacket sendPacket = new DatagramPacket(rawData, rawData.length, IP, portNumber);
                     clientSocket.send(sendPacket);
@@ -195,9 +203,10 @@ public class ClientSocket {
         private int portNumber;
         private DataListener dataListener;
         private byte[] rawData;
+        public volatile boolean exit = false;
 
 
-        public UDPReceiver(int portNumber, DataListener dataListener) {
+        UDPReceiver(int portNumber, DataListener dataListener) {
             this.portNumber = portNumber;
             this.dataListener = dataListener;
         }
@@ -206,20 +215,20 @@ public class ClientSocket {
         public void run() {
             try {
                 DatagramSocket serverSocket = new DatagramSocket(portNumber);
-                //Log.i(TAG, "Receiving......");
-                while (true) {
+                Log.i(TAG, "Receiving......");
+                while (!exit) {
                     try {
                         rawData = new byte[1024];
                         DatagramPacket receivePacket = new DatagramPacket(rawData, rawData.length);
                         serverSocket.receive(receivePacket);
                         gameData = new String(receivePacket.getData(), 0, receivePacket.getLength(), "ASCII");
                         dataListener.transData();
-                        //Log.i(TAG, gameData);
-                        //Log.i(TAG, "Receive data.");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
+                serverSocket.close();
+                Log.i(TAG, "Socket closed.");
             } catch (SocketException s) {
                 s.printStackTrace();
             }

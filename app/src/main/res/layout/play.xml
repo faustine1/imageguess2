@@ -81,33 +81,48 @@
         android:gravity="center">
 
         <TextView
+            android:id="@+id/guesser_1"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:background="@color/red">
+            android:background="@color/red"
+            android:textColor="@color/dark"
+            android:gravity="center">
         </TextView>
         <TextView
+            android:id="@+id/guesser_2"
             android:layout_marginLeft="15dp"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:background="@color/red">
+            android:background="@color/red"
+            android:textColor="@color/dark"
+            android:gravity="center">
         </TextView>
         <TextView
+            android:id="@+id/guesser_3"
             android:layout_marginLeft="15dp"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:background="@color/red">
+            android:background="@color/red"
+            android:textColor="@color/dark"
+            android:gravity="center">
         </TextView>
         <TextView
+            android:id="@+id/guesser_4"
             android:layout_marginLeft="15dp"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:background="@color/red">
+            android:background="@color/red"
+            android:textColor="@color/dark"
+            android:gravity="center">
         </TextView>
         <TextView
+            android:id="@+id/guesser_5"
             android:layout_marginLeft="15dp"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:background="@color/red">
+            android:background="@color/red"
+            android:textColor="@color/dark"
+            android:gravity="center">
         </TextView>
     </LinearLayout>
     <LinearLayout
@@ -117,33 +132,48 @@
         android:gravity="center">
 
         <TextView
+            android:id="@+id/score_guesser_1"
             android:layout_width="50dp"
             android:layout_height="25dp"
-            android:background="@color/colorAccent">
+            android:background="@color/colorAccent"
+            android:textColor="@color/dark"
+            android:gravity="center">
         </TextView>
         <TextView
+            android:id="@+id/score_guesser_2"
             android:layout_marginLeft="15dp"
             android:layout_width="50dp"
             android:layout_height="25dp"
-            android:background="@color/colorAccent">
+            android:background="@color/colorAccent"
+            android:textColor="@color/dark"
+            android:gravity="center">
         </TextView>
         <TextView
+            android:id="@+id/score_guesser_3"
             android:layout_marginLeft="15dp"
             android:layout_width="50dp"
             android:layout_height="25dp"
-            android:background="@color/colorAccent">
+            android:background="@color/colorAccent"
+            android:textColor="@color/dark"
+            android:gravity="center">
         </TextView>
         <TextView
+            android:id="@+id/score_guesser_4"
             android:layout_marginLeft="15dp"
             android:layout_width="50dp"
             android:layout_height="25dp"
-            android:background="@color/colorAccent">
+            android:background="@color/colorAccent"
+            android:textColor="@color/dark"
+            android:gravity="center">
         </TextView>
         <TextView
+            android:id="@+id/score_guesser_5"
             android:layout_marginLeft="15dp"
             android:layout_width="50dp"
             android:layout_height="25dp"
-            android:background="@color/colorAccent">
+            android:background="@color/colorAccent"
+            android:textColor="@color/dark"
+            android:gravity="center">
         </TextView>
     </LinearLayout>
 

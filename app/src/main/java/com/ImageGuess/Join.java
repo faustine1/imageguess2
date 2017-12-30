@@ -1,23 +1,33 @@
-package com.a091517.ldr.nihuawocai;
+package com.ImageGuess;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 import static android.content.ContentValues.TAG;
 
 /**
- * Created by Administrator on 2017/12/22.
+ * ImageGuess Game
+ * Join board interface
+ * Created by Stanislas, Lisette, Faustine on 2017/12 in SJTU.
  */
 
 public class Join extends Activity {
@@ -27,29 +37,59 @@ public class Join extends Activity {
     private float paintWidth = 12;
     private int paintColor = Color.BLACK;
     private String gameData;
+    private JSONObject gameDataJSON;
+    private TextView currentDrawer;
+    private LinearLayout paletteView;
+    private TextView cueWord;
+    private TextView timeShow;
+    private TextView currentRoomNumber;
+    private EditText answer;
+    private Button sendAnswerButton;
+    private ArrayList<TextView> guesserList;
+    private ArrayList<TextView> scoreGuesserList;
+    private ArrayList<Integer> scoreNumList; //各玩家分数
+    private ArrayList<String> wordsUsed;
+    private int localPort ;
+    private int actionState = 10000;
     private String localIP;
     private String remoteIP;
-    private int localPort ;
-    //private int remotePort = 8002;
-    private int actionState = 10000;
-    private static ClientSocket clientSocket;
-    private static JSONObject gameDataJSON;
+    private ClientSocket clientSocket;
+    private MyApp myApp;
     private static final float ERASE_WIDTH = 150;
     private static final int ACTION_DOWN = 10000;
     private static final int ACTION_MOVE = 10001;
     private static final int ACTION_UP = 10002;
-    private MyApp myApp;
+    private static final String CREATE_ROOM="create_room";
+    private static final String CURRENT_DRAWER="current_drawer";
+    private static final String SCORE_LIST="score_list";
+    private static final String WORDS_USED="used_words";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        final JoinView joinView = new JoinView(this);
-        setContentView(joinView);
+        setContentView(R.layout.play);
+        cueWord = (TextView) findViewById(R.id.currentWord);
+        currentRoomNumber = (TextView) findViewById(R.id.currentRoomNumber);
+        //currentRoomNumber.setText(this.getIntent().getStringExtra(CREATE_ROOM));  // no intent. use myapp
+        currentDrawer = (TextView) findViewById(R.id.playerNumber);
+        sendAnswerButton = (Button) findViewById(R.id.sendAnswerButton);
+        timeShow = (TextView) findViewById(R.id.timer);
+        paletteView = (LinearLayout) findViewById(R.id.paletteView);
+        answer = (EditText) findViewById(R.id.answer);
+        final JoinView joinView=new JoinView(this);
+        paletteView.addView(joinView);
+        cueWord.setText("a kind of fruit");
         myApp=(MyApp)getApplication();
-        clientSocket = new ClientSocket(this);
+        myApp.setPlayerState("1006");
+        myApp.setRoomState("1001");
+        clientSocket = new ClientSocket(this, myApp.getServerIP(), myApp.getServerPort());
+        //updateGameStatus();
         init();
+        timer.start();
+
         localIP = clientSocket.getIp(this);
-        localPort=Integer.parseInt(myApp.getPortNumber());
-        remoteIP = myApp.getRemoteIp();
+        localPort=myApp.getPortNumber();
+        remoteIP = myApp.getRemoteIP();
         clientSocket.InfoReceiver(localPort, new ClientSocket.DataListener() {
             @Override
             public void transData() {
@@ -76,7 +116,63 @@ public class Join extends Activity {
                 //Log.i(TAG, gameData);
             }
         });
+
     }
+
+    private void updateGameStatus(){
+        int currentDrawerId=this.getIntent().getIntExtra(CURRENT_DRAWER,1); //默认当前画画的是玩家1
+        currentDrawer.setText(String.valueOf(currentDrawerId));
+        guesserList=new ArrayList<TextView>();
+        Log.i(TAG,"updateGameStatus");
+        guesserList.add((TextView)findViewById(R.id.guesser_1));
+        guesserList.add((TextView)findViewById(R.id.guesser_2));
+        guesserList.add((TextView)findViewById(R.id.guesser_3));
+        guesserList.add((TextView)findViewById(R.id.guesser_4));
+        guesserList.add((TextView)findViewById(R.id.guesser_5));
+        scoreGuesserList=new ArrayList<TextView>();
+        scoreGuesserList.add((TextView)findViewById(R.id.score_guesser_1));
+        scoreGuesserList.add((TextView)findViewById(R.id.score_guesser_2));
+        scoreGuesserList.add((TextView)findViewById(R.id.score_guesser_3));
+        scoreGuesserList.add((TextView)findViewById(R.id.score_guesser_4));
+        scoreGuesserList.add((TextView)findViewById(R.id.score_guesser_5));
+
+        scoreNumList=this.getIntent().getIntegerArrayListExtra(SCORE_LIST);  //6位玩家的分数，下标对应
+        int j=0;
+        for(int i=0;i<5;++i){
+            if((j+1)==currentDrawerId)  //当前轮画画的玩家信息不在下方显示
+                ++j;
+            guesserList.get(i).setText(String.valueOf(j+1));
+            scoreGuesserList.get(i).setText(String.valueOf(scoreNumList.get(j)));
+            ++j;
+        }
+        wordsUsed=this.getIntent().getStringArrayListExtra(WORDS_USED);
+    }
+
+    private CountDownTimer timer=new CountDownTimer(30000,1000) {
+        @Override
+        public void onTick(long millisUntilFinished) {
+            timeShow.setText(millisUntilFinished/1000+"秒");
+        }
+
+        @Override
+        public void onFinish() { //时间到，换下一个玩家画画,销毁当前activity，新开activity
+            timeShow.setText("时间到！");
+            timeShow.setTextColor(Color.RED);
+            int nextDrawer;
+            nextDrawer=Integer.parseInt(currentDrawer.getText().toString())+1;
+            if(nextDrawer==7)
+                nextDrawer-=6;
+            Intent intent=new Intent(Join.this, Play.class);
+            //intent.putExtra(CURRENT_DRAWER,nextDrawer);
+            //intent.putExtra(SCORE_LIST,scoreNumList);
+            //intent.putExtra(WORDS_USED,wordsUsed);
+            //intent.putExtra(CREATE_ROOM,currentRoomNumber.getText());
+            //startActivity(intent);
+            finish();
+        }
+    };
+
+
 
     private void init() {
         drawPaint = new Paint();

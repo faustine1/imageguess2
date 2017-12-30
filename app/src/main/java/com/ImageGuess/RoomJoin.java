@@ -1,4 +1,4 @@
-package com.a091517.ldr.nihuawocai;
+package com.ImageGuess;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -14,25 +14,28 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Created by ldr on 2017/12/17.
+ * ImageGuess Game
+ * Room join interface
+ * Created by Stanislas, Lisette, Faustine on 2017/12 in SJTU.
  */
 
 public class RoomJoin extends Activity {
-    Button confirmButton;
-    EditText roomNumber;
-    JSONObject joinroomJSON=new JSONObject();
-    private static final String JOIN_ROOM="com.a091517.ldr.nihuawocai.join_room";
+    private Button confirmButton;
+    private EditText roomNumber;
+    private JSONObject joinRoomJSON =new JSONObject();
     private ClientSocket clientSocket;
     private String joinSuccess;
     private MyApp myApp;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.room_join);
-        clientSocket = new ClientSocket(this);
         confirmButton = (Button) findViewById(R.id.confirmJoinRoom);
         roomNumber = (EditText) findViewById(R.id.roomNumber);
         myApp=(MyApp)getApplication();
+        clientSocket = new ClientSocket(this, myApp.getServerIP(), myApp.getServerPort());
+
         roomNumber.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -42,8 +45,7 @@ public class RoomJoin extends Activity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 try {
-                    joinroomJSON.put("roomNumber", s);
-
+                    joinRoomJSON.put("roomNumber", s);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -52,7 +54,7 @@ public class RoomJoin extends Activity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                //   Toast.makeText(MainActivity.this,s,Toast.LENGTH_SHORT).show();
+
             }
         });
 
@@ -62,18 +64,18 @@ public class RoomJoin extends Activity {
             @Override
             public void onClick(View v) {
                 try {
-                    joinroomJSON.put("userName",myApp.getUserName());
-                    joinroomJSON.put("infoState",3);
-                    clientSocket.InfoToServer(joinroomJSON.toString(), new ClientSocket.DataListener() {
+                    joinRoomJSON.put("userName",myApp.getUserName());
+                    joinRoomJSON.put("infoState",3);
+                    clientSocket.InfoToServer(joinRoomJSON.toString(), new ClientSocket.DataListener() {
                         @Override
                         public void transData() {
                             try {
-                                joinSuccess = clientSocket.getServermessage();
+                                joinSuccess = clientSocket.getServerMessage();
                                 JSONObject message = new JSONObject(joinSuccess);
                                 System.out.println(message.toString());
                                 roomJoinState = message.get("roomJoinState").toString();
-                                myApp.setRemoteIp(message.get("remoteIP").toString());
-                                myApp.setRemotePort(message.get("remotePort").toString());
+                                myApp.setRemoteIP(message.get("remoteIP").toString());
+                                myApp.setRemotePort(Integer.parseInt(message.get("remotePort").toString()));
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -83,14 +85,16 @@ public class RoomJoin extends Activity {
                     switch (roomJoinState) {
                         case "102":
                             myApp.setRoomState("player");
-                            prompt = "成功加入房间" + joinroomJSON.get("roomNumber").toString();
+                            prompt = "成功加入房间" + joinRoomJSON.get("roomNumber").toString();
                             Toast.makeText(RoomJoin.this, prompt, Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(RoomJoin.this, RoomWait.class);
+                            /*
                             try {
-                                intent.putExtra(JOIN_ROOM, joinroomJSON.get("roomNumber").toString());
+                                intent.putExtra(JOIN_ROOM, joinRoomJSON.get("roomNumber").toString());
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
+                            */
                             startActivity(intent);
                             break;
                         case "103":

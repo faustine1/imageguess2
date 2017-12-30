@@ -1,10 +1,17 @@
-package com.a091517.ldr.nihuawocai;
+package com.ImageGuess;
 
 import android.app.Dialog;
 import android.content.Context;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+
+/**
+ * ImageGuess Game
+ * Width seek bar
+ * change the width of paint in drawing board
+ * Created by Stanislas, Lisette, Faustine on 2017/12 in SJTU.
+ */
 
 public class WidthSeekBar extends Dialog {
     private SeekBar width_seek;

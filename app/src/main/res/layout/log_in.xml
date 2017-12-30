@@ -4,7 +4,7 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              tools:context="com.a091517.ldr.nihuawocai.LogIn"
+              tools:context="com.ImageGuess.LogIn"
               android:background="@drawable/bgm">
 
     <TextView

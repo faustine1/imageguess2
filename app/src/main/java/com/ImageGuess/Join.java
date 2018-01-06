@@ -55,6 +55,7 @@ public class Join extends Activity {
     private String remoteIP;
     private ClientSocket clientSocket;
     private MyApp myApp;
+    private JSONObject endJSON;
     private static final float ERASE_WIDTH = 150;
     private static final int ACTION_DOWN = 10000;
     private static final int ACTION_MOVE = 10001;
@@ -118,6 +119,7 @@ public class Join extends Activity {
 
     }
 
+    /*
     private void updateGameStatus(){
         int currentDrawerId=this.getIntent().getIntExtra(CURRENT_DRAWER,1); //默认当前画画的是玩家1
         currentDrawer.setText(String.valueOf(currentDrawerId));
@@ -146,6 +148,7 @@ public class Join extends Activity {
         }
         wordsUsed=this.getIntent().getStringArrayListExtra(WORDS_USED);
     }
+    */
 
     private CountDownTimer timer=new CountDownTimer(5000,1000) {
         @Override
@@ -157,16 +160,27 @@ public class Join extends Activity {
         public void onFinish() { //时间到，换下一个玩家画画,销毁当前activity，新开activity
             timeShow.setText("时间到！");
             timeShow.setTextColor(Color.RED);
-            //int nextDrawer;
-            //nextDrawer=Integer.parseInt(currentDrawer.getText().toString())+1;
-            //if(nextDrawer==7)
-            //    nextDrawer-=6;
-            Intent intent=new Intent(Join.this, Play.class);
-            //intent.putExtra(CURRENT_DRAWER,nextDrawer);
-            //intent.putExtra(SCORE_LIST,scoreNumList);
-            //intent.putExtra(WORDS_USED,wordsUsed);
-            //intent.putExtra(CREATE_ROOM,currentRoomNumber.getText());
-            startActivity(intent);
+            if (myApp.getGameRound() > 0) {
+                myApp.setGameRound(myApp.getGameRound() - 1);
+                Intent intent = new Intent(Join.this, Play.class);
+                startActivity(intent);
+            }/* else{
+                try{
+                    endJSON.put("");
+
+                    clientSocket.InfoToServer(endJSON.toString(), new ClientSocket.DataListener(){
+                        @Override
+                        public void transData() {
+                            try {
+
+                            }
+                            catch (JSONException e){
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            }*/
             finish();
         }
     };

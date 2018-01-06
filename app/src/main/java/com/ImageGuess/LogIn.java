@@ -45,7 +45,7 @@ public class LogIn extends Activity {
                     loginJSON.put("userName",userName.getText());
                     loginJSON.put("infoState",1);  //infoState 1 represents a login behaviour.
                     myApp.setUserName(userName.getText().toString());
-                    clientSocket.InfoToServer(loginJSON.toString(),new ClientSocket.DataListener(){
+                    clientSocket.InfoToServer(loginJSON.toString(), new ClientSocket.DataListener(){
                         @Override
                         public void transData() {
                             try {

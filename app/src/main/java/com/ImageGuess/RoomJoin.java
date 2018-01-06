@@ -8,6 +8,7 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -20,7 +21,7 @@ import org.json.JSONObject;
  */
 
 public class RoomJoin extends Activity {
-    private Button confirmButton;
+    private ImageButton confirmButton;
     private EditText roomNumber;
     private JSONObject joinRoomJSON =new JSONObject();
     private ClientSocket clientSocket;
@@ -31,7 +32,8 @@ public class RoomJoin extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.room_join);
-        confirmButton = (Button) findViewById(R.id.confirmJoinRoom);
+        confirmButton = (ImageButton) findViewById(R.id.confirmJoinRoom);
+        confirmButton.setBackgroundResource(R.drawable.button2);
         roomNumber = (EditText) findViewById(R.id.roomNumber);
         myApp=(MyApp)getApplication();
         clientSocket = new ClientSocket(this, myApp.getServerIP(), myApp.getServerPort());
@@ -64,6 +66,7 @@ public class RoomJoin extends Activity {
             @Override
             public void onClick(View v) {
                 try {
+                    confirmButton.setBackgroundResource(R.drawable.button1);
                     joinRoomJSON.put("userName",myApp.getUserName());
                     joinRoomJSON.put("infoState",3);
                     clientSocket.InfoToServer(joinRoomJSON.toString(), new ClientSocket.DataListener() {
@@ -112,6 +115,7 @@ public class RoomJoin extends Activity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                confirmButton.setBackgroundResource(R.drawable.button2);
             }
         });
     }

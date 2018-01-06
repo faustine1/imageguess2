@@ -27,6 +27,9 @@
         <activity android:name="com.ImageGuess.LogIn">
 
         </activity>
+        <activity android:name="com.ImageGuess.Register">
+
+        </activity>
         <activity android:name="com.ImageGuess.Welcome">
 
         </activity>

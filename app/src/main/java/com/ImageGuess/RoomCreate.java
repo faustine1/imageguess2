@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,7 +25,7 @@ import static android.content.ContentValues.TAG;
  */
 
 public class RoomCreate extends Activity {
-    private Button confirmButton;
+    private ImageButton confirmButton;
     private EditText roomNumber;
     private JSONObject createRoomJSON =new JSONObject();
     private ClientSocket clientSocket;
@@ -37,7 +38,9 @@ public class RoomCreate extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.room_create);
-        confirmButton = (Button) findViewById(R.id.confirmCreateRoom);
+
+        confirmButton = (ImageButton) findViewById(R.id.confirmCreateRoom);
+        confirmButton.setBackgroundResource(R.drawable.button2);
         roomNumber = (EditText) findViewById(R.id.roomNumber);
         myApp=(MyApp) getApplication();
         clientSocket = new ClientSocket(this, myApp.getServerIP(), myApp.getServerPort());
@@ -98,6 +101,7 @@ public class RoomCreate extends Activity {
             @Override
             public void onClick(View v) {
                 try {
+                    confirmButton.setBackgroundResource(R.drawable.button1);
                     createRoomJSON.put("userName",myApp.getUserName());
                     createRoomJSON.put("infoState",2);  //infoState 2 represents a room create behaviour.
                     clientSocket.InfoToServer(createRoomJSON.toString(), new ClientSocket.DataListener() {
@@ -122,6 +126,7 @@ public class RoomCreate extends Activity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                confirmButton.setBackgroundResource(R.drawable.button1);
             }
         });
     }

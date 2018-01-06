@@ -96,6 +96,7 @@ public class RoomJoin extends Activity {
                             }
                             */
                             startActivity(intent);
+                            finish();
                             break;
                         case "103":
                             prompt = "房间号不存在，请重新输入";

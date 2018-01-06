@@ -80,10 +80,9 @@ public class Join extends Activity {
         paletteView.addView(joinView);
         cueWord.setText("a kind of fruit");
         myApp=(MyApp)getApplication();
-        myApp.setPlayerState("1006");
-        myApp.setRoomState("1001");
+        //myApp.setPlayerState("1006");
+        //myApp.setRoomState("1001");
         clientSocket = new ClientSocket(this, myApp.getServerIP(), myApp.getServerPort());
-        //updateGameStatus();
         init();
         timer.start();
 
@@ -148,7 +147,7 @@ public class Join extends Activity {
         wordsUsed=this.getIntent().getStringArrayListExtra(WORDS_USED);
     }
 
-    private CountDownTimer timer=new CountDownTimer(30000,1000) {
+    private CountDownTimer timer=new CountDownTimer(5000,1000) {
         @Override
         public void onTick(long millisUntilFinished) {
             timeShow.setText(millisUntilFinished/1000+"秒");
@@ -158,16 +157,16 @@ public class Join extends Activity {
         public void onFinish() { //时间到，换下一个玩家画画,销毁当前activity，新开activity
             timeShow.setText("时间到！");
             timeShow.setTextColor(Color.RED);
-            int nextDrawer;
-            nextDrawer=Integer.parseInt(currentDrawer.getText().toString())+1;
-            if(nextDrawer==7)
-                nextDrawer-=6;
+            //int nextDrawer;
+            //nextDrawer=Integer.parseInt(currentDrawer.getText().toString())+1;
+            //if(nextDrawer==7)
+            //    nextDrawer-=6;
             Intent intent=new Intent(Join.this, Play.class);
             //intent.putExtra(CURRENT_DRAWER,nextDrawer);
             //intent.putExtra(SCORE_LIST,scoreNumList);
             //intent.putExtra(WORDS_USED,wordsUsed);
             //intent.putExtra(CREATE_ROOM,currentRoomNumber.getText());
-            //startActivity(intent);
+            startActivity(intent);
             finish();
         }
     };

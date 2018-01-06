@@ -48,6 +48,7 @@ public class RoomWait extends Activity{
                 if (msg.what == 1){
                     Intent intent = new Intent(RoomWait.this, Join.class);
                     startActivity(intent);
+                    finish();
                 }
                 return false;
             }
@@ -104,6 +105,7 @@ public class RoomWait extends Activity{
                         */
                         Intent intent = new Intent(RoomWait.this, Play.class);
                         startActivity(intent);
+                        finish();
                     }catch (JSONException e) {
                         e.printStackTrace();
                     }
